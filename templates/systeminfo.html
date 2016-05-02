@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/plugins/bootstrap-3.3.5-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/mystyle.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/systeminfo.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-send"></span>&nbsp;&nbsp;系统</h3>
+                    </div>
+                    <div class="panel-body linuxBase">
+                        <p>主机名: <span class="hostname"></span></p>
+                        <p>内核版本: <span class="release"></span></p>
+                        <p>发行版本: <span class="version"></span></p>
+                        <p>硬件架构: <span class="machine"></span></p>
+                        <p>系统类型: <span class="processor"></span></p>
+                        <p>启动时间: <span class="starttime"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-th-large"></span> 硬件</h3>
+                    </div>
+                    <div class="panel-body hardBase">
+                        <p>逻辑CPU核心: <span class="logiccore"></span></p>
+                        <p>物理CPU核心: <span class="phycore"></span></p>
+                        <p>物理内存: <span class="phymem"></span></p>
+                        <p>磁盘容量: <span class="disktotal"></span></p>
+                        <p>已用容量: <span class="diskused"></span></p>
+                        <p>空闲容量: <span class="diskfree"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-dashboard"></span> 实时</h3>
+                    </div>
+                    <div class="panel-body nowBase">
+                        <p>CPU使用率: <span class="cpuused"></span></p>
+                        <p>内存使用率: <span class="memused"></span></p>
+                        <p>磁盘使用率: <span class="diskused"></span></p>
+                        <p>当前进程PID: <span class="thispid"></span></p>
+                        <p>进程总数: <span class="pidcount"></span></p>
+                        <p>15分钟负载: <span class="uptime"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-send"></span>&nbsp;&nbsp;系统</h3>
+                    </div>
+                    <div class="panel-body netcardBase">
+                        <p>有线网卡: <span class="hostname"></span></p>
+                        <p>无线网卡: <span class="release"></span></p>
+                        <p>发行版本: <span class="version"></span></p>
+                        <p>硬件架构: <span class="machine"></span></p>
+                        <p>系统类型: <span class="processor"></span></p>
+                        <p>启动时间: <span class="starttime"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-send"></span>&nbsp;&nbsp;系统</h3>
+                    </div>
+                    <div class="panel-body networkBase">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/plugins/bootstrap-3.3.5-dist/js/bootstrap.min.js"></script>
+    <script src="/static/js/systeminfo.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+.panel{border-radius: 0px;box-shadow:none;}
+.panel-heading{border-radius: 0;}
+.panel-default{border-color: #222;}
+.panel-default > .panel-heading{background-color: #222;color: #fff;border-color: #222;}
