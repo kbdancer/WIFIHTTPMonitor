@@ -18,6 +18,7 @@ urls = (
     "/login","doLogin",
     "/manage","dataCenter",
     "/sysinfo","systemInfo",
+    "/sysconfig","systemConfig",
     "/allinfo","getLinuxInfo",
     "/getCurrent","currentInfo"
 )
@@ -45,7 +46,7 @@ class doLogin:
         try:
             client = MongoClient('localhost', 27017)
             db = client.wifirecord
-            db.authenticate("wifihttp","admin@wifihttp")
+            db.authenticate("admin","admin")
 
             allcollections = db.collection_names(include_system_collections=False)
             print "[log]["+ str(datetime.datetime.now()) +"] :Find collections list :" + str(allcollections)
@@ -69,6 +70,11 @@ class dataCenter:
 class systemInfo:
     def GET(self):
         return render.systeminfo()
+
+#sysconfig
+class systemConfig:
+    def GET(self):
+        return render.systemconfig()
 
 class getLinuxInfo:
     def POST(self):
@@ -137,6 +143,11 @@ class currentInfo:
             }
         )
 
+
+
 if __name__ == "__main__":
+    if os.geteuid() != 0:
+        sys.exit('You must run this script as root')
+
     app = web.application(urls,globals())
     app.run()
