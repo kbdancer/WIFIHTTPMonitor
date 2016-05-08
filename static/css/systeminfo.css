@@ -1,3 +1,8 @@
 body{padding-top: 20px;}
 
 .linuxBase>p,.hardBase>p,.nowBase>p,.netcardBase>p{padding: 5px 0;margin: 0;}
+.interfaceBase table{margin: 0;}
+.nowireiface{margin-top: 8px;display: none;}
+.noinetiface{margin-top: 8px;display: none;}
+.inetlistbox{display: none;}
+.wslistbox{display: none;}

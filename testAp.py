@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import scapy.all as scapy
-import scapy_http.http
 import subprocess
 import threading
 import socket
@@ -16,11 +15,11 @@ DN = open(os.devnull, 'w')
 
 def get_isc_dhcp_server():
 	if not os.path.isfile('/usr/sbin/dhcpd'):
-			install = raw_input('[*]  isc-dhcp-server not found in /usr/sbin/dhcpd, install now? [y/n] ')
-			if install == 'y':
-				os.system('apt-get -y install isc-dhcp-server')
-			else:
-				sys.exit('[*] isc-dhcp-server not found in /usr/sbin/dhcpd')
+		install = raw_input('[*]  isc-dhcp-server not found in /usr/sbin/dhcpd, install now? [y/n] ')
+		if install == 'y':
+			os.system('apt-get -y install isc-dhcp-server')
+		else:
+			sys.exit('[*] isc-dhcp-server not found in /usr/sbin/dhcpd')
 
 def iwconfig():
 	monitors = []
@@ -158,10 +157,6 @@ def dhcp(dhcpconf, ipprefix):
 	else:
 		os.system('route add -net 172.16.0.0 netmask 255.255.255.0 gw 172.16.0.1')
 
-def http_header(packet):
-	http_packet=str(packet)
-	if http_packet.find('GET') or http_packet.find('POST'):
-		return http_packet
 
 if __name__ == "__main__":
 
@@ -169,7 +164,7 @@ if __name__ == "__main__":
 	if os.geteuid() != 0:
 		sys.exit('You must run this script as root')
 
-	# check dhcpd service 
+	# check dhcpd service
 	get_isc_dhcp_server()
 
 	# check if mon interface
@@ -195,7 +190,7 @@ if __name__ == "__main__":
 
 	userSetAp = ap_iface[0]
 	userSetChannel = '6'
-	fadeESSID = '16wifi'
+	fadeESSID = '1205'
 
 	# get monitor iface
 	mon_iface = start_monitor(userSetAp,userSetChannel)
@@ -203,7 +198,7 @@ if __name__ == "__main__":
 	# get monitor mac
 	mon_mac1 = get_mon_mac(mon_iface)
 
-	# start 
+	# start
 	start_ap(mon_iface, userSetChannel, fadeESSID)
 
 	dhcpconf = dhcp_conf(ipprefix)
@@ -214,13 +209,15 @@ if __name__ == "__main__":
 
 	while 1:
 		signal.signal(signal.SIGINT, cleanup)
-		pkts = scapy.sniff(iface="at0",filter = "tcp",prn=http_header)
-		
-		print len(pkts)
-		# print '\nDHCP leases log file:'
-		# proc = subprocess.Popen(['cat', '/var/lib/dhcp/dhcpd.leases'], stdout=subprocess.PIPE, stderr=DN)
-		# for line in proc.communicate()[0].split('\n'):
-		# 	print line
+		# pkts = scapy.sniff(iface="at0",filter = "tcp",count=1)
+		# pkts[0].show()
+		os.system('clear')
+		print '\nDHCP leases log file:'
+		proc = subprocess.Popen(['cat', '/var/lib/dhcp/dhcpd.leases'], stdout=subprocess.PIPE, stderr=DN)
+		for line in proc.communicate()[0].split('\n'):
+			print line
+
+		time.sleep(1)
 
 	# app = web.application(urls,globals())
 	# app.run()
