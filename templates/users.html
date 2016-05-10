@@ -6,121 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/plugins/bootstrap-3.3.5-dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/mystyle.css">
-    <link rel="stylesheet" type="text/css" href="/static/css/systeminfo.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/users.css">
 </head>
 <body>
     <div class="container">
-      <div class="alert alert-danger" role="alert">
-          <b>注意：系统运行需要至少 2 张网卡作为联网和创建AP使用，并且至少有 1 张是无线网卡</b>
+      <div class="row">
+          <div class="col-md-12">
+              <table cellspacing="0" cellpadding="0" class="table table-bordered userstable">
+                  <thead>
+                      <tr>
+                          <th>终端名称</th>
+                          <th width="160">MAC地址</th>
+                          <th>IP地址</th>
+                          <th>UID</th>
+                          <th width="170">接入时间</th>
+                          <th width="170">记录时间</th>
+                      </tr>
+                  </thead>
+                  <tbody></tbody>
+              </table>
+          </div>
       </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title"><span class="glyphicon glyphicon-send"></span>&nbsp;&nbsp;系统</h3>
-                    </div>
-                    <div class="panel-body linuxBase">
-                        <p>主机名: <span class="hostname"></span></p>
-                        <p>内核版本: <span class="release"></span></p>
-                        <p>发行版本: <span class="version"></span></p>
-                        <p>硬件架构: <span class="machine"></span></p>
-                        <p>系统类型: <span class="processor"></span></p>
-                        <p>启动时间: <span class="starttime"></span></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title"><span class="glyphicon glyphicon-th-large"></span> 硬件</h3>
-                    </div>
-                    <div class="panel-body hardBase">
-                        <p>逻辑CPU核心: <span class="logiccore"></span></p>
-                        <p>物理CPU核心: <span class="phycore"></span></p>
-                        <p>物理内存: <span class="phymem"></span></p>
-                        <p>磁盘容量: <span class="disktotal"></span></p>
-                        <p>已用容量: <span class="diskused"></span></p>
-                        <p>空闲容量: <span class="diskfree"></span></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title"><span class="glyphicon glyphicon-dashboard"></span> 实时</h3>
-                    </div>
-                    <div class="panel-body nowBase">
-                        <p>CPU使用率: <span class="cpuused"></span></p>
-                        <p>内存使用率: <span class="memused"></span></p>
-                        <p>磁盘使用率: <span class="diskused"></span></p>
-                        <p>当前进程PID: <span class="thispid"></span></p>
-                        <p>进程总数: <span class="pidcount"></span></p>
-                        <p>系统负载: <span class="uptime"></span></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-8">
-                <div class="panel panel-default">
-                    <div class="panel-heading clearfix">
-                        <div class="col-md-6" style="padding:0"><h3 class="panel-title"><span class="glyphicon glyphicon-send"></span>&nbsp;&nbsp;接口</h3></div>
-                        <div class="col-md-6 text-right" style="padding:0">
-                            <button class="btn btn-xs btn-primary" onclick="systeminfo.getIface()"><span class="glyphicon glyphicon-refresh"></span>&nbsp; 刷新</button>
-                        </div>
-                    </div>
-                    <div class="panel-body interfaceBase">
-                        <table cellspacing="0" cellpadding="0" class="table table-bordered table-condensed">
-                            <thead>
-                                <tr>
-                                    <th>名称</th>
-                                    <th>MAC地址</th>
-                                    <th>状态</th>
-                                    <th>IP地址</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-heading clearfix">
-                        <div class="col-md-6" style="padding:0"><h3 class="panel-title"><span class="glyphicon glyphicon-send"></span>&nbsp;&nbsp;配置AP</h3></div>
-                        <div class="col-md-6 text-right" style="padding:0">
-                            <button class="btn btn-xs btn-primary" onclick="systeminfo.cleanEnv()"><span class="glyphicon glyphicon-refresh"></span>&nbsp; 重置网卡</button>
-                            <button class="btn btn-xs btn-primary" onclick="systeminfo.getIface()"><span class="glyphicon glyphicon-refresh"></span>&nbsp; 刷新</button>
-                        </div>
-                    </div>
-                    <div class="panel-body APBase">
-                        <div class="inetlistbox" style="margin-bottom: 8px;display: none;">
-                            <label>联网接口</label>
-                            <select class="innet_list" onchange="systeminfo.setWireless()"></select>
-                        </div>
-                        <div class="alert alert-danger noinetiface" style="padding:5px 15px;display: none;" role="alert">未找到可用的联网接口</div>
-                        <div class="wslistbox" style="margin-bottom: 8px;display: none;">
-                            <label>无线接口</label>
-                            <select class="wireless_list" onchange=""></select>
-                        </div>
-                        <div class="alert alert-danger nowireiface" style="padding:5px 15px;display: none;" role="alert">未找到可用的无线接口</div>
-                        <div class="input-group" style="margin-bottom:5px;margin-top: 5px;">
-                            <span class="input-group-addon">无线名称</span>
-                            <input type="text" class="form-control input-sm" id="wireless_ssid" placeholder="请输入SSID" value="Free Wifi">
-                        </div>
-                        <div class="input-group" style="margin-bottom:16px;">
-                            <span class="input-group-addon">无线密码</span>
-                            <input type="text" class="form-control input-sm" id="wireless_key" placeholder="请输入KEY（大于10位的纯数字）">
-                        </div>
-                        <button class="btn btn-danger" onclick="systeminfo.createap()" style="display: block;width:100%">创建AP</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/plugins/bootstrap-3.3.5-dist/js/bootstrap.min.js"></script>
-    <script src="/static/js/systeminfo.js"></script>
+    <script src="/static/js/users.js"></script>
 </body>
 </html>

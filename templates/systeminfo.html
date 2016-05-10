@@ -90,8 +90,7 @@
                     <div class="panel-heading clearfix">
                         <div class="col-md-6" style="padding:0"><h3 class="panel-title"><span class="glyphicon glyphicon-send"></span>&nbsp;&nbsp;配置AP</h3></div>
                         <div class="col-md-6 text-right" style="padding:0">
-                            <button class="btn btn-xs btn-primary" onclick="systeminfo.cleanEnv()"><span class="glyphicon glyphicon-refresh"></span>&nbsp; 重置网卡</button>
-                            <button class="btn btn-xs btn-primary" onclick="systeminfo.getIface()"><span class="glyphicon glyphicon-refresh"></span>&nbsp; 刷新</button>
+                            <button class="btn btn-xs btn-danger" onclick="systeminfo.cleanEnv()"><span class="glyphicon glyphicon-trash"></span>&nbsp; 清理环境</button>
                         </div>
                     </div>
                     <div class="panel-body APBase">
@@ -107,11 +106,11 @@
                         <div class="alert alert-danger nowireiface" style="padding:5px 15px;display: none;" role="alert">未找到可用的无线接口</div>
                         <div class="input-group" style="margin-bottom:5px;margin-top: 5px;">
                             <span class="input-group-addon">无线名称</span>
-                            <input type="text" class="form-control input-sm" id="wireless_ssid" placeholder="请输入SSID" value="Free Wifi">
+                            <input type="text" class="form-control input-sm" id="wireless_ssid" placeholder="请输入SSID" value="FreeWifi">
                         </div>
                         <div class="input-group" style="margin-bottom:16px;">
                             <span class="input-group-addon">无线密码</span>
-                            <input type="text" class="form-control input-sm" id="wireless_key" placeholder="请输入KEY（大于10位的纯数字）">
+                            <input type="text" class="form-control input-sm" id="wireless_key" placeholder="请输入KEY（>=10位的纯数字）" value="">
                         </div>
                         <button class="btn btn-danger" onclick="systeminfo.createap()" style="display: block;width:100%">创建AP</button>
                     </div>

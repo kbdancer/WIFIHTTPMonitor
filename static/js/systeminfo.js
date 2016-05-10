@@ -8,6 +8,7 @@ var allinetface = []
 var systeminfo = {
 	getSystemInfo:function(){
 		$.post('/allinfo', {}, function(data, textStatus, xhr) {
+            window.parent.hideloading();
 			if(data.code == 0){
                 // set system info
                 var baseBox = $('.linuxBase');
@@ -51,7 +52,9 @@ var systeminfo = {
         },"json")
     },
     getIface:function(){
+        window.parent.showloading();
         $.post('/getInterface', {}, function(data, textStatus, xhr) {
+            window.parent.hideloading();
             if(data.code == 0){
 
 				if(data.interfaces.length<1){
@@ -118,10 +121,11 @@ var systeminfo = {
         }
     },
     cleanEnv:function(){
-        $.post('/rmMon', {}, function(data, textStatus, xhr) {
+        window.parent.showloading();
+        $.post('/cleanup', {}, function(data, textStatus, xhr) {
+            window.parent.hideloading();
             if(data.code == 0){
                 systeminfo.getIface()
-                alert('Success!')
             }else{
                 alert(data.msg)
             }
@@ -131,7 +135,9 @@ var systeminfo = {
         var iface = $('.wireless_list').val(),inet = $('.innet_list').val(),ssid = $("#wireless_ssid").val(),key = $("#wireless_key").val();
 
         if(ssid.length<1){ alert('SSID 不能为空');return; }
+        window.parent.showloading();
         $.post('/createAp', {"inet":inet,"ap":iface,"ssid":ssid,"key":key}, function(data, textStatus, xhr) {
+            window.parent.hideloading();
             if(data.code == 0){
                 systeminfo.getIface()
             }else{

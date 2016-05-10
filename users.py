@@ -30,7 +30,7 @@ def saveUsers():
                 start_utc = line.split()[2]+' '+line.split()[3][:-1]
             if "hardware" in line:
                 mac = line.split()[2][:-1]
-            if "uid" in line:
+            if "uid" in line and "server-duid" not in line:
                 uid = line.split()[1].replace('"','')[:-1]
         m2 = hashlib.md5()   
         m2.update(start_utc+mac+ipaddress+uid+hostname)
@@ -41,10 +41,9 @@ def saveUsers():
         cu = cx.cursor() 
         # cx.execute("create table users (id integer primary key,start_utc varchar(20),mac varchar(20),ip varchar(20),uid varchar(50),clientname varchar(100),createtime TimeStamp NOT NULL DEFAULT (datetime('now','localtime')))")
         for u in users:
-            print u
             cu.execute("select * from users where hash = '"+u[5]+"'")
-            # if not cu.fetchone():
-            #     cu.execute("insert into users (start,mac,ip,uid,client,hash) values (?,?,?,?,?,?)", u)
+            if not cu.fetchone():
+                cu.execute("insert into users (start,mac,ip,uid,client,hash) values (?,?,?,?,?,?)", u)
         cx.commit()
     except Exception, e:
         print e
