@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	getUsers();
-	// setInterval(getUsers,5000);
+	setInterval(getUsers,3000);
 });
 
 function getUsers(){

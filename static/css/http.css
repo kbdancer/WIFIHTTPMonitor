@@ -1,1 +1,6 @@
 body{padding-top: 20px;}
+
+.httptable{table-layout: fixed;}
+.httptable th{text-align: center;}
+.httptable td{text-align: center;vertical-align: middle; }
+.httptable td p{text-overflow : clip | ellipsis;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width:100%;}

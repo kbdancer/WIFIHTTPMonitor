@@ -30,7 +30,8 @@ urls = (
     "/cleanup","cleanEnv",
     "/getusers","getUsers",
     "/gethttp","getHTTP",
-    "/queryUser","queryAllUsers"
+    "/queryUser","queryAllUsers",
+    "/queryHttp","queryReqlist"
 )
 
 #static
@@ -221,7 +222,7 @@ class createAP:
         ipprefix = getIpfix(inet)
         dhcpconf = dhcp_conf(ipprefix)
         dhcp(dhcpconf, ipprefix)
-        # subprocess.Popen(['xterm','-e','python',sys.path[0]+'/sniffer.py'], stdout=DN, stderr=DN)
+        proc = subprocess.Popen(['python',sys.path[0]+'/sniffer.py'], stdout=DN, stderr=DN)
         return json.dumps({"code":0})
 
 class getUsers:
@@ -231,6 +232,22 @@ class getUsers:
 class getHTTP:
     def GET(self):
         return render.http()    
+class queryReqlist:
+    def GET(self):
+        httpList = []
+        try:
+            cx = sqlite3.connect(sys.path[0]+"/wifihttp.db")
+            cu = cx.cursor() 
+            cu.execute("select * from httprec order by createtime desc limit 30")
+            rows = cu.fetchall()
+            cu.close()
+            cx.close()
+            for r in rows:
+                httpList.append({"id":r[0],"type":r[1],"uri":r[2],"ua":r[3],"host":r[4],"referer":r[5],"createtime":r[6],"cookie":r[7]})
+            return json.dumps({"code":0,"rows":httpList})
+        except Exception, e:
+            killpid = os.system('fuser wifihttp.db').read().split(':')[1]
+            os.system('kill '+killpid)
 
 class cleanEnv:
     def POST(self):
@@ -262,7 +279,6 @@ class queryAllUsers:
         except Exception, e:
             killpid = os.system('fuser wifihttp.db').read().split(':')[1]
             os.system('kill '+killpid)
-            queryAllUsers()
 
 def saveUsersToSqlite():
     users = []
@@ -282,7 +298,7 @@ def saveUsersToSqlite():
             if "lease" in line and "{" in line:
                 ipaddress = line.split()[1]
             if "starts" in line:
-                start_utc = line.split()[2]+' '+line.split()[3][:-1]
+                start_utc = line.split()[2].replace('/','-')+' '+line.split()[3][:-1]
             if "hardware" in line:
                 mac = line.split()[2][:-1]
             if "uid" in line and "server-duid" not in line:
@@ -298,7 +314,6 @@ def saveUsersToSqlite():
     for u in users:
         try:
             cx = sqlite3.connect(sys.path[0]+"/wifihttp.db")
-            # cx.execute("create table users (id integer primary key,start_utc varchar(20),mac varchar(20),ip varchar(20),uid varchar(50),clientname varchar(100),createtime TimeStamp NOT NULL DEFAULT (datetime('now','localtime')))")
             cu = cx.cursor() 
             cu.execute("select * from users where hash = '"+u[5]+"'")
             if not cu.fetchone():
@@ -398,6 +413,10 @@ def rm_mon():
             subprocess.Popen(['ifconfig', m, 'up'], stdout=DN, stderr=DN)
 
 if __name__ == "__main__":
+
+    print '-'*24
+    print '|      by 92ez.com     |'
+    print '-'*24
 
     if os.geteuid() != 0:
         sys.exit('[Error!!!] You must run this script as root')
