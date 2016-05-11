@@ -26,8 +26,8 @@ deb-src http://mirrors.ustc.edu.cn/kali-security kali-current/updates main contr
 2.全面更新系统并重启
 <pre>apt-get update && apt-get dist-upgrade -y</pre>
 
-3.安装 python-dev
-<pre>apt-get install python-dev</pre>
+3.安装 python-dev 和 gcc
+<pre>apt-get install python-dev -y && apt-get install gcc -y</pre>
 
 4.安装pip
 <pre>wget https://bootstrap.pypa.io/get-pip.py
@@ -57,3 +57,6 @@ python get-pip.py</pre>
 
 #### 反馈
 时间仓促，很多细节可能没有考虑到，单纯实现了功能，测试也只是进行了初步的测试，遇到问题请将问题整理发送至邮箱 ttyusb@126.com
+
+#### 注意
+经过测试发现此程序并不能在树莓派3B上运行，查找相关资料并找到原因为arcrack-ng并不支持树莓派3的板载无线网卡（BCM 43430），所以建议还是买一块USB无线网卡比较保险，推荐RT8187
