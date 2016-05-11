@@ -327,6 +327,7 @@ def saveUsersToSqlite():
             saveUsersToSqlite()
 
 def getIpfix(inet_face):
+    tempip = ''
     tempres = os.popen("ifconfig "+inet_face).read()
     for line in tempres.split('\n'):
         if "netmask" in line:
@@ -384,7 +385,6 @@ def start_ap(mon_iface, channel, essid, key, ap):
         subprocess.Popen(['ifconfig', 'at0', 'mtu', '1400'], stdout=DN, stderr=DN)
     except Exception,e:
         print e
-        cleanup()
 
 def dhcp(dhcpconf, ipprefix):
     os.system('echo > /var/lib/dhcp/dhcpd.leases')
