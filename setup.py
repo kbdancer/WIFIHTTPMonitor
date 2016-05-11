@@ -6,6 +6,7 @@ import os
 
 os.system('apt-get update && apt-get dist-upgrade -y')
 os.system('apt-get install python-dev -y')
+os.system('apt-get install gcc -y')
 os.system('apt-get install rfkill -y')
 os.system('apt-get -y install isc-dhcp-server')
 os.system('wget wget https://bootstrap.pypa.io/get-pip.py')
