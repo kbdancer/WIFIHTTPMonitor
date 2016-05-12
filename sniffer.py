@@ -45,4 +45,26 @@ def myprint(packet):
 
     return thisRecord
 
-sniff(iface='at0',prn=myprint,lfilter=lambda p: "GET" in str(p) or "POST" in str(p),filter="tcp")
+def testPrint(pkg):
+
+    pkg.show() 
+    mac_form = pkg.sprintf("%Ether.src%")
+    mac_to = pkg.sprintf("%Ether.dst%")
+
+    ip_from = pkg.sprintf("%IP.src%")
+    ip_to = pkg.sprintf("%IP.dst%")
+
+    port_from = pkg.sprintf("%TCP.sport%")
+    port_to = pkg.sprintf("%TCP.dport%")
+
+    raw = pkg.sprintf("%Raw.load%")
+
+
+    print '-'*60
+    print mac_form+" => "+mac_to
+    print ip_from+":"+ port_from +" => "+ip_to
+    print raw
+    print '-'*60
+
+
+sniff(iface='wlan0',prn=testPrint,lfilter=lambda p: "GET" in str(p) or "POST" in str(p),filter="tcp")
