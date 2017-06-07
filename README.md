@@ -1,5 +1,7 @@
 # WIFIHTTPMonitor
 用来监测通过wifi连接的TCP流量，解析HTTP请求并展示的web平台
+
+![](https://raw.githubusercontent.com/kbdancer/WIFIHTTPMonitor/master/cut.png)
 ### 注意
 此程序在 kali linux 下测试通过，由于非root环境下的各种未知权限问题暂时未解决，故脚本必须在root权限下运行
 ### 用途
