@@ -366,7 +366,7 @@ def start_ap(mon_iface, channel, essid, key, ap):
         if len(key) < 1:
             subprocess.Popen(['airbase-ng', '-P', '-c', channel, '-e', essid, mon_iface], stdout=DN, stderr=DN)
         else:
-            subprocess.Popen(['airbase-ng', '-P', '-c', channel, '-e', essid,'-w',key, mon_iface], stdout=DN, stderr=DN)
+            subprocess.Popen(['airbase-ng', '-P', '-c', channel, '-e', essid, '-w', key, mon_iface], stdout=DN, stderr=DN)
         time.sleep(6)
         print '[*] '+essid+' set up on channel '+channel+' via '+mon_iface+' on '+ap + ' key is '+key
         subprocess.Popen(['ifconfig', 'at0', 'up', '10.0.0.1', 'netmask', '255.255.255.0'], stdout=DN, stderr=DN)
